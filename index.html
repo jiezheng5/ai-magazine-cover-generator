@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Magazine Cover Generator</title>
+    <link rel="stylesheet" href="index.css" />
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.run/@google/genai",
+    "jszip": "https://esm.run/jszip",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>AI Magazine Cover Generator</h1>
+      <p>
+        Turn your photos into a year of stunning, professional-looking magazine
+        covers.
+      </p>
+    </header>
+
+    <main>
+      <section class="controls">
+        <div class="input-group">
+          <label for="file-input">1. Upload Your Photos</label>
+          <div id="drop-zone" class="drop-zone">
+            <div class="drop-zone-prompt">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+                />
+              </svg>
+              <span>Drag & drop photos here, or click to select</span>
+            </div>
+          </div>
+          <input type="file" id="file-input" multiple accept="image/*" hidden />
+          <div id="preview-container" class="preview-container"></div>
+        </div>
+
+        <div class="input-group">
+          <label for="magazine-name">2. Name Your Magazine</label>
+          <input
+            type="text"
+            id="magazine-name"
+            placeholder="e.g., VOGUE, PEOPLE, TIME"
+            aria-label="Magazine Name"
+          />
+        </div>
+
+        <button id="generate-btn" aria-label="Generate magazine covers">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm2.29 15.29.71-.71L16.41 15H19v-2h-2.59l-1.41-1.41.71-.71L18 13.17V7.83l-2.29-2.29-.71.71L16.41 9H14v2h2.41l1.41 1.41-.71.71L15.83 11H8.17l-1.29-1.29-.71-.71L7.59 10H5v2h2.59l1.41 1.41-.71.71L6 13.17V18h2v-4.83l2.29-2.29.71.71L12.41 13H14v-2h-1.59l-1.41-1.41.71-.71L13.17 11h2.66l2.29 2.29.71.71L17.41 15H16v2h1.41l-1.12 1.29z"
+            />
+          </svg>
+          Generate Covers
+        </button>
+      </section>
+
+      <section id="results-header" class="results-header hidden">
+        <button
+          id="download-btn"
+          aria-label="Download all generated covers as a zip file"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"
+            />
+          </svg>
+          Download All Covers
+        </button>
+      </section>
+
+      <section id="results" class="results-grid" aria-live="polite"></section>
+    </main>
+    <div id="loader" class="loader-overlay" role="status" aria-hidden="true">
+      <div class="loader-content">
+        <div class="spinner"></div>
+        <p>Generating your covers... This may take a few moments.</p>
+      </div>
+    </div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

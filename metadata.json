@@ -1,0 +1,6 @@
+{
+  "name": "AI Magazine Cover Generator",
+  "description": "Upload your photos, provide a magazine name, and use Gemini to generate a full year of unique, professional-looking magazine covers.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
