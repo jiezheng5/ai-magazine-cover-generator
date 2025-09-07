@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "vscode.git",
+    "github.copilot",
+    "github.copilot-chat",
+    "ms-vscode.js-debug",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "geminicode.gemini",
+    "anthropic.claude-vscode",
+    "augmentech.augment-vscode"
+  ]
+}

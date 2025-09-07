@@ -190,54 +190,54 @@ generateBtn.addEventListener('click', async () => {
     'December',
   ];
 
-  // A more artistic and curated set of transformations for a true gallery wall mosaic
+  // More artistic and varied transformations for a true gallery wall mosaic
   const galleryStyles = [
     {
-      transform: 'rotate(-6deg) scale(1.05) translateY(-20px) translateX(-5%)',
-      zIndex: 2,
-    },
-    {
-      transform: 'rotate(4deg) scale(0.95) translateY(30px) translateX(10%)',
-      zIndex: 1,
-    },
-    {
-      transform: 'rotate(1deg) scale(1.1) translateY(-5%) translateX(5%)',
-      zIndex: 5,
-    },
-    {
-      transform: 'rotate(7deg) scale(1.0) translateY(15%) translateX(-8%)',
+      transform: 'rotate(-5deg) scale(1.02) translateY(-15px) translateX(-10px)',
       zIndex: 3,
     },
     {
-      transform: 'rotate(-3deg) scale(1.0) translateY(5px) translateX(8%)',
-      zIndex: 4,
-    },
-    {
-      transform: 'rotate(-5deg) scale(1.08) translateY(10%) translateX(-12%)',
-      zIndex: 6,
-    },
-    {
-      transform: 'rotate(2deg) scale(0.9) translateY(-10%) translateX(15%)',
-      zIndex: 1,
-    },
-    {
-      transform: 'rotate(5deg) scale(1.02) translateY(8%) translateX(-5%)',
-      zIndex: 4,
-    },
-    {
-      transform: 'rotate(-2deg) scale(1.0) translateY(-5%) translateX(0%)',
-      zIndex: 3,
-    },
-    {
-      transform: 'rotate(-7deg) scale(0.98) translateY(12%) translateX(10%)',
+      transform: 'rotate(3deg) scale(0.98) translateY(10px) translateX(5px)',
       zIndex: 2,
     },
     {
-      transform: 'rotate(6deg) scale(1.05) translateY(-8%) translateX(-9%)',
+      transform: 'rotate(1deg) scale(1.05) translateY(-25px) translateX(15px)',
       zIndex: 5,
     },
     {
-      transform: 'rotate(-1deg) scale(1.0) translateY(0%) translateX(3%)',
+      transform: 'rotate(6deg) scale(1.0) translateY(5px) translateX(-5px)',
+      zIndex: 1,
+    },
+    {
+      transform: 'rotate(-2deg) scale(0.97) translateY(20px) translateX(10px)',
+      zIndex: 4,
+    },
+    {
+      transform: 'rotate(-4deg) scale(1.03) translateY(0px) translateX(-20px)',
+      zIndex: 2,
+    },
+    {
+      transform: 'rotate(4.5deg) scale(1.01) translateY(-10px) translateX(20px)',
+      zIndex: 3,
+    },
+    {
+      transform: 'rotate(-1deg) scale(0.99) translateY(15px) translateX(-15px)',
+      zIndex: 1,
+    },
+    {
+      transform: 'rotate(2.5deg) scale(1.04) translateY(-5px) translateX(0px)',
+      zIndex: 4,
+    },
+    {
+      transform: 'rotate(-3.5deg) scale(0.96) translateY(25px) translateX(8px)',
+      zIndex: 2,
+    },
+    {
+      transform: 'rotate(5deg) scale(1.02) translateY(-20px) translateX(-12px)',
+      zIndex: 5,
+    },
+    {
+      transform: 'rotate(-2deg) scale(1) translateY(8px) translateX(18px)',
       zIndex: 3,
     },
   ];
@@ -255,6 +255,7 @@ generateBtn.addEventListener('click', async () => {
     `;
 
     // Apply predefined transformations for the mosaic effect
+    // Use the index directly since we now have 12 unique styles
     const style = galleryStyles[index];
     card.style.transform = style.transform;
     card.style.zIndex = String(style.zIndex); // Control stacking order
@@ -312,18 +313,18 @@ async function generateCover(month: string, year: number, imageFile: File) {
 
     const prompt = `Your task is to generate a magazine cover for "${magazineName}" for the ${month} ${year} issue. Follow these steps carefully:
 
-Step 1: Analyze the provided photo to identify the subject's key facial features (e.g., face shape, eyes, nose, mouth, and any distinguishing marks). This is the 'locked facial identity'. It is CRITICAL that this identity remains consistent and recognizable. DO NOT alter the subject's core facial structure.
+Step 1: Analyze the provided photo to identify the subject's key facial features (e.g., face shape, eyes, nose, mouth, and any distinguishing marks). This is the 'locked facial identity' and it MUST remain consistent and recognizable. DO NOT alter this core identity.
 
-Step 2: Create a complete magazine cover featuring this person. The cover must prominently display the magazine name "${magazineName}" and the issue date "${month} ${year}".
+Step 2: Create a complete magazine cover featuring this person. The cover must clearly display the text "${month} ${year}".
 
-Step 3: While preserving the locked facial identity, creatively style the entire cover to be authentic for "${magazineName}" magazine from the year ${year}. The styling must also reflect a theme for the month of ${month}. This includes:
-- The background, lighting, and overall artistic direction.
-- The subject's clothing, hairstyle, makeup, and accessories (like jewelry). These elements must be stylistically appropriate for a "${magazineName}" cover from the year ${year}.
-- The person's expression and pose should match the monthly theme (e.g., festive for December, vibrant for July).
-- Add professional-looking magazine headlines and typography that are characteristic of "${magazineName}" and relevant to the month.
+Step 3: While preserving the locked facial identity, creatively style the cover to reflect a theme appropriate for ${month}. You can change the following:
+- Hairstyle, makeup, jewelry, and clothing.
+- The person's expression and pose to match the monthly theme (e.g., joyful for summer, cozy for winter).
+- The background and overall artistic style of the cover.
+- Add professional-looking magazine headlines relevant to the month.
 
 ${orientationInstruction}
-The final output must be a single, complete magazine cover image. Do not change the person's apparent age or gender from the original photo.`;
+The final output must be a single, complete magazine cover image. Do not change the person's apparent age or gender.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image-preview',

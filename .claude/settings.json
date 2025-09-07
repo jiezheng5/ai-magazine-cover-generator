@@ -1,0 +1,47 @@
+{
+  "anthropic": {
+    "apiKey": "${ANTHROPIC_API_KEY}",
+    "model": "claude-3",
+    "features": {
+      "codeAnalysis": true,
+      "completions": true,
+      "inlineCompletion": true,
+      "codeLens": true
+    },
+    "completion": {
+      "language": {
+        "typescript": true,
+        "javascript": true,
+        "python": true,
+        "java": true,
+        "go": true,
+        "rust": true
+      },
+      "style": {
+        "detailed": true,
+        "comments": true,
+        "tests": true
+      }
+    },
+    "analysis": {
+      "depth": "comprehensive",
+      "security": true,
+      "performance": true,
+      "bestPractices": true
+    },
+    "context": {
+      "useGitHistory": true,
+      "includeComments": true,
+      "maxFiles": 10,
+      "maxTokens": 8000
+    }
+  },
+  "vscode": {
+    "anthropic": {
+      "enabled": true,
+      "suggestInline": true,
+      "highlightReferences": true,
+      "showCodeLens": true
+    }
+  }
+}
