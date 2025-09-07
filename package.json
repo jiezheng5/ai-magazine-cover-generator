@@ -10,9 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "latest",
-    "jszip": "latest",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "jszip": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

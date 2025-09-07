@@ -6,16 +6,13 @@
     <title>AI Magazine Cover Generator</title>
     <link rel="stylesheet" href="index.css" />
     <script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://esm.run/@google/genai",
-    "jszip": "https://esm.run/jszip",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
-  }
-}
-</script>
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai",
+          "jszip": "https://esm.run/jszip"
+        }
+      }
+    </script>
   </head>
   <body>
     <header class="app-header">
@@ -53,8 +50,19 @@
           <input
             type="text"
             id="magazine-name"
-            placeholder="e.g., VOGUE, PEOPLE, TIME"
+            class="text-input"
+            placeholder="e.g., VOGUE, Vanity Fair, PEOPLE, TIME, The New Yorker, Newsweek, Us Weekly, Golf Digest, Good Housekeeping, National Georgraphic, ..."
             aria-label="Magazine Name"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="year-input">3. Choose a Year</label>
+          <input
+            type="number"
+            id="year-input"
+            class="text-input"
+            aria-label="Year for the magazine issues"
           />
         </div>
 
@@ -98,6 +106,24 @@
         <p>Generating your covers... This may take a few moments.</p>
       </div>
     </div>
+
+    <div
+      id="modal-overlay"
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+    >
+      <button
+        id="modal-close-btn"
+        class="modal-close-btn"
+        aria-label="Close enlarged view"
+      >
+        &times;
+      </button>
+      <img id="modal-image" class="modal-image" alt="Enlarged magazine cover" />
+    </div>
+
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
