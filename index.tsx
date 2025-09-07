@@ -190,54 +190,54 @@ generateBtn.addEventListener('click', async () => {
     'December',
   ];
 
-  // More artistic and varied transformations for a true gallery wall mosaic
+  // A more artistic and curated set of transformations for a true gallery wall mosaic
   const galleryStyles = [
     {
-      transform: 'rotate(-5deg) scale(1.02) translateY(-15px) translateX(-10px)',
-      zIndex: 3,
-    },
-    {
-      transform: 'rotate(3deg) scale(0.98) translateY(10px) translateX(5px)',
+      transform: 'rotate(-6deg) scale(1.05) translateY(-20px) translateX(-5%)',
       zIndex: 2,
     },
     {
-      transform: 'rotate(1deg) scale(1.05) translateY(-25px) translateX(15px)',
-      zIndex: 5,
-    },
-    {
-      transform: 'rotate(6deg) scale(1.0) translateY(5px) translateX(-5px)',
+      transform: 'rotate(4deg) scale(0.95) translateY(30px) translateX(10%)',
       zIndex: 1,
     },
     {
-      transform: 'rotate(-2deg) scale(0.97) translateY(20px) translateX(10px)',
-      zIndex: 4,
-    },
-    {
-      transform: 'rotate(-4deg) scale(1.03) translateY(0px) translateX(-20px)',
-      zIndex: 2,
-    },
-    {
-      transform: 'rotate(4.5deg) scale(1.01) translateY(-10px) translateX(20px)',
-      zIndex: 3,
-    },
-    {
-      transform: 'rotate(-1deg) scale(0.99) translateY(15px) translateX(-15px)',
-      zIndex: 1,
-    },
-    {
-      transform: 'rotate(2.5deg) scale(1.04) translateY(-5px) translateX(0px)',
-      zIndex: 4,
-    },
-    {
-      transform: 'rotate(-3.5deg) scale(0.96) translateY(25px) translateX(8px)',
-      zIndex: 2,
-    },
-    {
-      transform: 'rotate(5deg) scale(1.02) translateY(-20px) translateX(-12px)',
+      transform: 'rotate(1deg) scale(1.1) translateY(-5%) translateX(5%)',
       zIndex: 5,
     },
     {
-      transform: 'rotate(-2deg) scale(1) translateY(8px) translateX(18px)',
+      transform: 'rotate(7deg) scale(1.0) translateY(15%) translateX(-8%)',
+      zIndex: 3,
+    },
+    {
+      transform: 'rotate(-3deg) scale(1.0) translateY(5px) translateX(8%)',
+      zIndex: 4,
+    },
+    {
+      transform: 'rotate(-5deg) scale(1.08) translateY(10%) translateX(-12%)',
+      zIndex: 6,
+    },
+    {
+      transform: 'rotate(2deg) scale(0.9) translateY(-10%) translateX(15%)',
+      zIndex: 1,
+    },
+    {
+      transform: 'rotate(5deg) scale(1.02) translateY(8%) translateX(-5%)',
+      zIndex: 4,
+    },
+    {
+      transform: 'rotate(-2deg) scale(1.0) translateY(-5%) translateX(0%)',
+      zIndex: 3,
+    },
+    {
+      transform: 'rotate(-7deg) scale(0.98) translateY(12%) translateX(10%)',
+      zIndex: 2,
+    },
+    {
+      transform: 'rotate(6deg) scale(1.05) translateY(-8%) translateX(-9%)',
+      zIndex: 5,
+    },
+    {
+      transform: 'rotate(-1deg) scale(1.0) translateY(0%) translateX(3%)',
       zIndex: 3,
     },
   ];
@@ -255,7 +255,6 @@ generateBtn.addEventListener('click', async () => {
     `;
 
     // Apply predefined transformations for the mosaic effect
-    // Use the index directly since we now have 12 unique styles
     const style = galleryStyles[index];
     card.style.transform = style.transform;
     card.style.zIndex = String(style.zIndex); // Control stacking order
@@ -283,6 +282,83 @@ generateBtn.addEventListener('click', async () => {
     }
   }
 });
+
+/**
+ * Calls the Gemini API with a retry and fallback mechanism.
+ * It tries the first model in the list, retrying on quota errors.
+ * If all retries fail due to quota, it falls back to the next model in the list.
+ * @param payload The request payload, including a `models` array for fallback.
+ * @returns The API response.
+ */
+async function generateContentWithFallback(payload: {
+  models: string[];
+  contents: {parts: ({inlineData: {data: string; mimeType: string}} | {text: string})[]};
+  config: {temperature: number; responseModalities: Modality[]};
+}) {
+  const maxRetries = 3;
+
+  for (const model of payload.models) {
+    let delay = 1000; // Initial delay 1s, reset for each model
+    console.log(`Attempting generation with model: ${model}`);
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Create the payload for this specific model call
+        const apiPayload = {
+          model: model,
+          contents: payload.contents,
+          config: payload.config,
+        };
+
+        const response = await ai.models.generateContent(apiPayload);
+
+        // Check for empty response (e.g., safety block)
+        const imagePart = response.candidates?.[0]?.content?.parts.find(
+          (part) => part.inlineData,
+        );
+        if (!imagePart?.inlineData) {
+          throw new Error(
+            'Model returned no image. This could be due to a safety policy violation or an issue with the prompt.',
+          );
+        }
+        // Success!
+        console.log(`Successfully generated image with ${model}`);
+        return response;
+      } catch (error) {
+        console.error(
+          `Generation attempt ${attempt + 1} with ${model} failed:`,
+          error,
+        );
+
+        const isQuotaError =
+          error instanceof Error &&
+          (error.message.includes('RESOURCE_EXHAUSTED') ||
+            error.message.includes('429'));
+
+        if (isQuotaError && attempt < maxRetries - 1) {
+          // It's a quota error and we still have retries left for this model.
+          console.log(
+            `Quota limit reached for ${model}. Retrying in ${delay / 1000}s...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+        } else if (isQuotaError && attempt === maxRetries - 1) {
+          // It's a quota error on the last retry for this model.
+          console.log(`Max retries for ${model} reached. Trying next model.`);
+          break; // Break from the retry loop to go to the next model.
+        } else {
+          // It's not a quota error, so it's a hard failure. Don't retry or fallback.
+          throw error;
+        }
+      }
+    } // End of retry loop for one model
+  } // End of model fallback loop
+
+  // If we exit the outer loop, it means all models have failed due to quota limits.
+  throw new Error(
+    'All retry and fallback attempts failed, likely due to persistent quota limits.',
+  );
+}
 
 async function generateCover(month: string, year: number, imageFile: File) {
   const magazineName = magazineNameInput.value.trim();
@@ -313,21 +389,27 @@ async function generateCover(month: string, year: number, imageFile: File) {
 
     const prompt = `Your task is to generate a magazine cover for "${magazineName}" for the ${month} ${year} issue. Follow these steps carefully:
 
-Step 1: Analyze the provided photo to identify the subject's key facial features (e.g., face shape, eyes, nose, mouth, and any distinguishing marks). This is the 'locked facial identity' and it MUST remain consistent and recognizable. DO NOT alter this core identity.
+Step 1: Analyze the provided photo to identify the subject's key facial features (e.g., face shape, eyes, nose, mouth, and any distinguishing marks). This is the 'locked facial identity'. It is CRITICAL that this identity remains consistent and recognizable. DO NOT alter the subject's core facial structure.
 
-Step 2: Create a complete magazine cover featuring this person. The cover must clearly display the text "${month} ${year}".
+Step 2: Create a complete magazine cover featuring this person. The cover must prominently display the magazine name "${magazineName}" and the issue date "${month} ${year}".
 
-Step 3: While preserving the locked facial identity, creatively style the cover to reflect a theme appropriate for ${month}. You can change the following:
-- Hairstyle, makeup, jewelry, and clothing.
-- The person's expression and pose to match the monthly theme (e.g., joyful for summer, cozy for winter).
-- The background and overall artistic style of the cover.
-- Add professional-looking magazine headlines relevant to the month.
+Step 3: While preserving the locked facial identity, creatively style the entire cover to be authentic for "${magazineName}" magazine from the year ${year}. The styling must also reflect a theme for the month of ${month}. This includes:
+- The background, lighting, and overall artistic direction.
+- The subject's clothing, hairstyle, makeup, and accessories (like jewelry). These elements must be stylistically appropriate for a "${magazineName}" cover from the year ${year}.
+- The person's expression and pose should match the monthly theme (e.g., festive for December, vibrant for July).
+- Add professional-looking magazine headlines and typography that are characteristic of "${magazineName}" and relevant to the month.
 
 ${orientationInstruction}
-The final output must be a single, complete magazine cover image. Do not change the person's apparent age or gender.`;
+The final output must be a single, complete magazine cover image. Do not change the person's apparent age or gender from the original photo.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image-preview',
+    // Define the primary model and any potential fallbacks.
+    const modelsToTry = [
+      'gemini-2.5-flash-image-preview',
+      // In the future, a less powerful/costly model could be added here as a fallback.
+    ];
+
+    const response = await generateContentWithFallback({
+      models: modelsToTry,
       contents: {
         parts: [
           {
@@ -347,67 +429,78 @@ The final output must be a single, complete magazine cover image. Do not change 
       },
     });
 
-    const imagePart = response.candidates?.[0]?.content?.parts.find(
+    const imagePart = response.candidates[0].content.parts.find(
       (part) => part.inlineData,
-    );
+    )!;
 
-    if (imagePart?.inlineData) {
-      const {data: base64Data, mimeType} = imagePart.inlineData;
-      generatedCovers.set(month, {data: base64Data, mimeType});
-      const generatedImageSrc = `data:${mimeType};base64,${base64Data}`;
+    const {data: base64Data, mimeType: responseMimeType} =
+      imagePart.inlineData!;
+    generatedCovers.set(month, {data: base64Data, mimeType: responseMimeType});
+    const generatedImageSrc = `data:${responseMimeType};base64,${base64Data}`;
 
-      // Clear the spinner and prepare for new content
-      cardContent.innerHTML = '';
-      cardContent.style.padding = '0';
-      cardContent.style.position = 'relative';
+    // Clear the spinner and prepare for new content
+    cardContent.innerHTML = '';
+    cardContent.style.padding = '0';
+    cardContent.style.position = 'relative';
 
-      // Add clickable class and listener for modal
-      cardContent.classList.add('clickable');
-      cardContent.addEventListener('click', () => {
-        openModal(
-          generatedImageSrc,
-          `${magazineName} - ${month} ${year} cover`,
-        );
-      });
+    // Add clickable class and listener for modal
+    cardContent.classList.add('clickable');
+    cardContent.addEventListener('click', () => {
+      openModal(generatedImageSrc, `${magazineName} - ${month} ${year} cover`);
+    });
 
-      // Create the image element
-      const img = document.createElement('img');
-      img.src = generatedImageSrc;
-      img.alt = `${magazineName} - ${month} ${year} cover`;
-      img.className = 'generated-image';
+    // Create the image element
+    const img = document.createElement('img');
+    img.src = generatedImageSrc;
+    img.alt = `${magazineName} - ${month} ${year} cover`;
+    img.className = 'generated-image';
 
-      // Create the individual download button
-      const downloadSingleBtn = document.createElement('button');
-      downloadSingleBtn.className = 'download-single-btn';
-      downloadSingleBtn.title = `Download ${month} cover`;
-      downloadSingleBtn.setAttribute('aria-label', `Download ${month} cover`);
-      downloadSingleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+    // Create the individual download button
+    const downloadSingleBtn = document.createElement('button');
+    downloadSingleBtn.className = 'download-single-btn';
+    downloadSingleBtn.title = `Download ${month} cover`;
+    downloadSingleBtn.setAttribute('aria-label', `Download ${month} cover`);
+    downloadSingleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
 
-      downloadSingleBtn.onclick = (e) => {
-        e.stopPropagation(); // Prevent card click from opening modal
-        const link = document.createElement('a');
-        link.href = generatedImageSrc;
-        const extension = mimeType.split('/')[1] || 'png';
-        const cleanMagazineName =
-          magazineName.trim().replace(/\s+/g, '_') || 'Magazine';
-        link.download = `${cleanMagazineName}_${month}_${year}.${extension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
+    downloadSingleBtn.onclick = (e) => {
+      e.stopPropagation(); // Prevent card click from opening modal
+      const link = document.createElement('a');
+      link.href = generatedImageSrc;
+      const extension = responseMimeType.split('/')[1] || 'png';
+      const cleanMagazineName =
+        magazineName.trim().replace(/\s+/g, '_') || 'Magazine';
+      link.download = `${cleanMagazineName}_${month}_${year}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
 
-      cardContent.appendChild(img);
-      cardContent.appendChild(downloadSingleBtn);
-    } else {
-      throw new Error('No image was generated by the model.');
-    }
+    cardContent.appendChild(img);
+    cardContent.appendChild(downloadSingleBtn);
   } catch (error) {
     console.error(`Failed to generate cover for ${month}:`, error);
     const errorMessage =
       error instanceof Error ? error.message : 'An unknown error occurred.';
+
+    let titleMessage = `Generation Failed`;
+    let userMessage = `Could not create cover for ${month}.`;
+
+    if (
+      errorMessage.includes('RESOURCE_EXHAUSTED') ||
+      errorMessage.includes('429') ||
+      errorMessage.includes('persistent quota limits')
+    ) {
+      titleMessage = `Quota Limit Reached`;
+      userMessage = 'The API is busy. Please wait a while before trying again.';
+    } else if (errorMessage.includes('Model returned no image')) {
+      titleMessage = `Image Generation Blocked`;
+      userMessage =
+        'This may be due to safety filters. Try a different input photo.';
+    }
+
     cardContent.innerHTML = `<div class="card-error">
-        <strong>Generation Failed</strong>
-        <p>Could not create cover for ${month}. Please try again.</p>
+        <strong>${titleMessage}</strong>
+        <p>${userMessage}</p>
         <small>${errorMessage}</small>
       </div>`;
   }
